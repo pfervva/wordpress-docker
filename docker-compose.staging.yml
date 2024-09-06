@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx_staging
+    volumes:
+      - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf
+    ports:
+      - "8000:80"
+    networks:
+      - staging_network
+    restart: always
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress_staging
+    environment:
+      WORDPRESS_DB_HOST: db_staging
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+    volumes:
+      - ./wordpress:/var/www/html
+      - wordpress_uploads:/var/www/html/wp-content/uploads
+    networks:
+      - staging_network
+    restart: always
+
+  db:
+    image: mysql:5.7
+    container_name: mysql_staging
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
+      MYSQL_USER: ${WORDPRESS_DB_USER}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - staging_network
+    restart: always
+
+networks:
+  staging_network:
+    driver: bridge
+
+volumes:
+  db_data:
+  wordpress_uploads:
